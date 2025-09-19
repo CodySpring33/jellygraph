@@ -50,8 +50,9 @@ RUN apk add --no-cache sqlite openssl openssl-dev
 
 # Create app directory and user (1000:1000 for compatibility)
 WORKDIR /app
-RUN addgroup -g 1000 -S nodejs
-RUN adduser -S nodejs -u 1000
+# Use existing group 1000 or create it, then create user 1000
+RUN if ! getent group 1000 >/dev/null 2>&1; then addgroup -g 1000 -S appgroup; fi
+RUN adduser -S nodejs -u 1000 -G $(getent group 1000 | cut -d: -f1)
 
 # Copy package files and install production dependencies
 COPY package*.json ./
