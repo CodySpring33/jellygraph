@@ -1,69 +1,20 @@
-version: '3.8'
-
-# 🚀 Jellyfin Analytics Dashboard
+# 🚀 Jellyfin Analytics Dashboard - SIMPLE VERSION
 # One-command deployment: docker compose up
 # Dashboard: http://localhost:3000
-# Settings: Configure Jellyfin server via web UI
 
 services:
   jellyfin-analytics:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: .
     container_name: jellyfin-analytics
     restart: unless-stopped
     ports:
       - '3000:3000'
     environment:
-      # Server Configuration
       - NODE_ENV=production
-      - PORT=3000
-
-      # Database Configuration
       - DATABASE_URL=file:/app/data/analytics.db
-
-      # Auto-generated encryption key for settings security
       - ENCRYPTION_KEY=${ENCRYPTION_KEY:-JellyfinAnalytics2024SecureDefaultKey!ChangeInProduction}
     volumes:
-      # Persist SQLite database and logs (auto-created)
       - ./data:/app/data
       - ./logs:/app/logs
-
-    # Network configuration
-    networks:
-      - jellyfin-analytics-network
-
-    # Health check
-    healthcheck:
-      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost:3000/health']
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-
-    # Resource limits (optional)
-    deploy:
-      resources:
-        limits:
-          memory: 512M
-          cpus: '0.5'
-        reservations:
-          memory: 256M
-          cpus: '0.25'
-
-    # Logging configuration
-    logging:
-      driver: 'json-file'
-      options:
-        max-size: '10m'
-        max-file: '3'
-
-# Note: Volumes are auto-created as bind mounts in ./data and ./logs directories
-
-# Network configuration
-networks:
-  jellyfin-analytics-network:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 172.20.0.0/16
+    # Use default bridge network for Windows compatibility
+    # Linux users can use host networking with: docker run --network host ...
