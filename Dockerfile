@@ -48,11 +48,8 @@ FROM node:20-alpine AS production
 # Install sqlite3, OpenSSL, and other necessary packages for Prisma
 RUN apk add --no-cache sqlite openssl openssl-dev
 
-# Create app directory and user (1000:1000 for compatibility)
+# Create app directory
 WORKDIR /app
-# Use existing group 1000 or create it, then create user 1000
-RUN if ! getent group 1000 >/dev/null 2>&1; then addgroup -g 1000 -S appgroup; fi
-RUN adduser -S nodejs -u 1000 -G $(getent group 1000 | cut -d: -f1)
 
 # Copy package files and install production dependencies
 COPY package*.json ./
@@ -70,13 +67,12 @@ COPY --from=frontend-builder /app/client/dist ./dist/client/dist
 # Copy environment configuration
 COPY env.example ./.env.example
 
-# Create necessary directories with proper permissions
+# Create necessary directories and set ownership for user 1000:1000
 RUN mkdir -p /app/data /app/logs /app/uploads && \
-    chown -R nodejs:nodejs /app && \
-    chmod 755 /app/data /app/logs /app/uploads
+    chmod 755 /app/data /app/logs /app/uploads && \
+    chown -R 1000:1000 /app
 
-# Switch to non-root user
-USER nodejs
+# Note: Container will run as UID:GID 1000:1000 via --user flag
 
 # Expose the port the app runs on
 EXPOSE 3000

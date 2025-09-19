@@ -13,11 +13,12 @@ mkdir -p data logs
 # Ensure directories are owned by user 1000:1000 (matches container user)
 sudo chown -R 1000:1000 data logs 2>/dev/null || chown -R 1000:1000 data logs 2>/dev/null || true
 
-# Run the container with host networking (eliminates ALL network issues on Linux!)
+# Run the container with host networking and as user 1000:1000
 docker run -d \
   --name jellyfin-analytics \
   --restart unless-stopped \
   --network host \
+  --user 1000:1000 \
   -v "$(pwd)/data:/app/data" \
   -v "$(pwd)/logs:/app/logs" \
   -e NODE_ENV=production \
