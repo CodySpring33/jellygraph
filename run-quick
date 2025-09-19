@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# 🚀 Quick Restart - Jellyfin Analytics Dashboard
+# For when you just want to restart without full cleanup
+# Usage: ./run-quick
+
+echo "🔄 Quick restart of Jellyfin Analytics Dashboard..."
+
+# Stop and remove container
+docker stop jellyfin-analytics 2>/dev/null || true
+docker rm jellyfin-analytics 2>/dev/null || true
+
+# Ensure data directories exist with correct permissions
+mkdir -p data logs
+chown -R 1000:1000 data logs 2>/dev/null || sudo chown -R 1000:1000 data logs
+
+# Start container (uses existing image)
+docker run -d \
+  --name jellyfin-analytics \
+  --restart unless-stopped \
+  --network host \
+  --user 1000:1000 \
+  -v "$(pwd)/data:/app/data" \
+  -v "$(pwd)/logs:/app/logs" \
+  -e NODE_ENV=production \
+  -e DATABASE_URL="file:/app/data/analytics.db" \
+  -e ENCRYPTION_KEY="${ENCRYPTION_KEY:-JellyfinAnalytics2024SecureDefaultKey!ChangeInProduction}" \
+  jellyfin-analytics
+
+echo "✅ Container restarted!"
+echo "📊 Dashboard: http://localhost:3000"
+echo "📱 Logs: docker logs -f jellyfin-analytics"

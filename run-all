@@ -1,0 +1,160 @@
+#!/bin/bash
+
+# 🚀 Jellyfin Analytics Dashboard - Complete Fresh Install & Run
+# This script does EVERYTHING needed for a fresh deployment on Linux
+# Usage: ./run-all
+
+set -e  # Exit on any error
+
+echo "🧹 ====== FRESH INSTALL STARTING ======"
+echo "🚀 Jellyfin Analytics Dashboard - Complete Fresh Install"
+echo "📊 This will completely reset and redeploy the analytics dashboard"
+echo ""
+
+# Confirmation
+read -p "⚠️  This will DELETE existing analytics data and containers. Continue? (y/N): " -n 1 -r
+echo
+if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    echo "❌ Installation cancelled."
+    exit 1
+fi
+
+echo ""
+echo "🧹 ====== CLEANUP PHASE ======"
+
+# Stop and remove any existing containers
+echo "🛑 Stopping existing containers..."
+docker stop jellyfin-analytics 2>/dev/null || echo "   No container to stop"
+docker rm jellyfin-analytics 2>/dev/null || echo "   No container to remove"
+
+# Remove old images to force fresh build
+echo "🗑️  Removing old images..."
+docker rmi jellyfin-analytics 2>/dev/null || echo "   No image to remove"
+docker rmi jellygraph-jellyfin-analytics 2>/dev/null || echo "   No old image to remove"
+
+# Clean up old data (THIS DELETES YOUR ANALYTICS DATA!)
+echo "🗂️  Removing old data and logs..."
+rm -rf data logs 2>/dev/null || echo "   No data to clean"
+
+# Docker cleanup
+echo "🧽 Cleaning Docker system..."
+docker system prune -f >/dev/null 2>&1 || echo "   Docker cleanup completed"
+
+echo ""
+echo "🔧 ====== PREPARATION PHASE ======"
+
+# Create fresh data directories with proper permissions
+echo "📁 Creating data directories..."
+mkdir -p data logs
+chown -R 1000:1000 data logs 2>/dev/null || {
+    echo "   Setting ownership with sudo..."
+    sudo chown -R 1000:1000 data logs
+}
+chmod -R 755 data logs
+
+# Verify we have the required files
+echo "✅ Checking required files..."
+if [[ ! -f "Dockerfile" ]]; then
+    echo "❌ Error: Dockerfile not found!"
+    exit 1
+fi
+
+if [[ ! -f "prisma/schema.prisma" ]]; then
+    echo "❌ Error: Prisma schema not found!"
+    exit 1
+fi
+
+# Check if we have the BigInt migration
+if [[ ! -d "prisma/migrations" ]]; then
+    echo "❌ Error: Prisma migrations directory not found!"
+    echo "   Make sure you have the latest code with BigInt fixes."
+    exit 1
+fi
+
+# Verify BigInt schema
+if ! grep -q "BigInt" prisma/schema.prisma; then
+    echo "⚠️  Warning: Schema may not have BigInt fix!"
+    echo "   Continuing anyway..."
+fi
+
+echo ""
+echo "🏗️  ====== BUILD PHASE ======"
+
+# Build the Docker image
+echo "🔨 Building Docker image (this may take a few minutes)..."
+docker build -t jellyfin-analytics . || {
+    echo "❌ Docker build failed!"
+    exit 1
+}
+
+echo ""
+echo "🚀 ====== DEPLOYMENT PHASE ======"
+
+# Deploy with host networking and user 1000:1000
+echo "📦 Starting container with optimal Linux settings..."
+docker run -d \
+  --name jellyfin-analytics \
+  --restart unless-stopped \
+  --network host \
+  --user 1000:1000 \
+  -v "$(pwd)/data:/app/data" \
+  -v "$(pwd)/logs:/app/logs" \
+  -e NODE_ENV=production \
+  -e DATABASE_URL="file:/app/data/analytics.db" \
+  -e ENCRYPTION_KEY="${ENCRYPTION_KEY:-JellyfinAnalytics2024SecureDefaultKey!ChangeInProduction}" \
+  jellyfin-analytics
+
+echo ""
+echo "⏳ ====== VERIFICATION PHASE ======"
+
+# Wait for container to start
+echo "⏳ Waiting for container to start..."
+sleep 5
+
+# Check if container is running
+if ! docker ps | grep -q jellyfin-analytics; then
+    echo "❌ Container failed to start! Checking logs..."
+    docker logs jellyfin-analytics
+    exit 1
+fi
+
+# Wait a bit more for the app to initialize
+echo "⏳ Waiting for application to initialize..."
+sleep 10
+
+# Test health endpoint
+echo "🔍 Testing application health..."
+if curl -f http://localhost:3000/health >/dev/null 2>&1; then
+    echo "✅ Health check passed!"
+else
+    echo "⚠️  Health check failed, but container is running. Check logs if needed."
+fi
+
+echo ""
+echo "🎉 ====== INSTALLATION COMPLETE! ======"
+echo ""
+echo "✅ Jellyfin Analytics Dashboard is now running!"
+echo ""
+echo "🎯 Next Steps:"
+echo "1. Open your browser: http://localhost:3000"
+echo "   (or http://YOUR-SERVER-IP:3000 from another machine)"
+echo ""
+echo "2. Click 'Settings' tab"
+echo ""
+echo "3. Configure Jellyfin connection:"
+echo "   📡 Jellyfin URL: http://localhost:8096"
+echo "   🔑 API Key: (generate from Jellyfin Admin > Dashboard > API Keys)"
+echo ""
+echo "4. Test connection and start monitoring!"
+echo ""
+echo "📱 Management Commands:"
+echo "   View logs:    docker logs -f jellyfin-analytics"
+echo "   Stop:         docker stop jellyfin-analytics"
+echo "   Remove:       docker rm jellyfin-analytics"
+echo "   Fresh install: ./run-all"
+echo ""
+echo "🐛 Troubleshooting:"
+echo "   If you see 500 errors, check: docker logs jellyfin-analytics"
+echo "   If port 3000 is busy, stop other services using that port"
+echo ""
+echo "🎊 Happy monitoring!"

@@ -13,13 +13,26 @@ docker compose up -d
 
 ### 🐧 Linux (Recommended for Linux servers):
 
+**🎯 Complete Fresh Install (Recommended):**
 ```bash
-# Build the image first
-docker build -t jellyfin-analytics .
+# One command does everything! (Deletes old data)
+chmod +x run-all
+./run-all
+```
 
-# Use our optimized Linux script (host networking = no network issues!)
+**⚡ Quick Install:**
+```bash
+# Build and run (preserves existing data)
+docker build -t jellyfin-analytics .
 chmod +x run.sh
 ./run.sh
+```
+
+**🔄 Quick Restart:**
+```bash
+# Just restart container (preserves data & image)
+chmod +x run-quick
+./run-quick
 ```
 
 ### 🍎 Mac:
