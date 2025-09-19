@@ -1,5 +1,10 @@
 version: '3.8'
 
+# 🚀 Jellyfin Analytics Dashboard
+# One-command deployment: docker compose up
+# Dashboard: http://localhost:3000
+# Settings: Configure Jellyfin server via web UI
+
 services:
   jellyfin-analytics:
     build:
@@ -17,14 +22,12 @@ services:
       # Database Configuration
       - DATABASE_URL=file:/app/data/analytics.db
 
-      # Optional: Encryption key for settings (generate a secure key for production)
-      - ENCRYPTION_KEY=${ENCRYPTION_KEY:-jellyfin-analytics-default-key-change-in-production}
+      # Auto-generated encryption key for settings security
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY:-JellyfinAnalytics2024SecureDefaultKey!ChangeInProduction}
     volumes:
-      # Persist SQLite database
-      - jellyfin_analytics_data:/app/data
-
-      # Optional: Mount logs directory
-      - jellyfin_analytics_logs:/app/logs
+      # Persist SQLite database and logs (auto-created)
+      - ./data:/app/data
+      - ./logs:/app/logs
 
     # Network configuration
     networks:
@@ -55,21 +58,7 @@ services:
         max-size: '10m'
         max-file: '3'
 
-# Volumes for data persistence
-volumes:
-  jellyfin_analytics_data:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ./data
-
-  jellyfin_analytics_logs:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ./logs
+# Note: Volumes are auto-created as bind mounts in ./data and ./logs directories
 
 # Network configuration
 networks:

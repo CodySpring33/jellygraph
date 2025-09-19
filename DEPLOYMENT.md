@@ -1,6 +1,25 @@
 # 🚀 Deployment Guide: Jellyfin Analytics Dashboard
 
-This guide walks you through deploying the Jellyfin Analytics Dashboard on a server that's already running Jellyfin in a Docker container.
+## ⚡ Quick Deployment (Recommended)
+
+**Want to get started immediately? Use the one-command deployment:**
+
+```bash
+git clone <repository-url>
+cd jellyfin-analytics
+docker compose up
+```
+
+✅ **Zero configuration required!**  
+✅ **All directories created automatically**  
+✅ **Database initialized automatically**  
+✅ **Configure Jellyfin via web UI at** `http://localhost:3000/settings`
+
+---
+
+## 📖 Advanced Deployment Guide
+
+This guide provides advanced deployment options for servers already running Jellyfin in Docker containers.
 
 ## 📋 Prerequisites
 

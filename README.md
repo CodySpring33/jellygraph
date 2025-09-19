@@ -18,27 +18,23 @@ A comprehensive analytics dashboard for Jellyfin media server that provides insi
 - **API Client**: Axios for Jellyfin REST API integration
 - **Charts**: Recharts for data visualization
 
-## Quick Start
+## ⚡ Quick Start
 
-### Option 1: Docker Compose (Recommended)
+### One-Command Deployment
 
-1. **Clone and Setup**
+```bash
+git clone <repository-url>
+cd jellyfin-analytics
+docker compose up
+```
 
-   ```bash
-   git clone <repository-url>
-   cd jellyfin-analytics
-   cp env.example .env
-   ```
+**That's it!** 🎉
 
-2. **Start with Docker**
+- **Dashboard**: `http://localhost:3000`
+- **Setup**: Configure Jellyfin in Settings tab
+- **Zero Config**: All directories and database created automatically
 
-   ```bash
-   docker-compose up --build
-   ```
-
-3. **Access and Configure**
-   - Open http://localhost:3000 in your browser
-   - Go to Settings and configure your Jellyfin server URL and API key
+### Alternative: Manual Setup
 
 ### Option 2: Local Development
 

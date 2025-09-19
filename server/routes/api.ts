@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import express from 'express';
+import express, { type Request, type Response } from 'express';
 import { AnalyticsService } from '../services/analytics';
 import { JellyfinService } from '../services/jellyfin';
 import { SettingsService } from '../services/settings';
@@ -15,7 +15,7 @@ settingsService.initializeSettings().catch(console.error);
 jellyfinService.loadConfigurationFromSettings().catch(console.error);
 
 // Dashboard overview endpoint
-router.get('/dashboard/overview', async (req, res) => {
+router.get('/dashboard/overview', async (req: Request, res: Response) => {
   try {
     const overview = await analyticsService.getDashboardOverview();
     res.json(overview);
@@ -26,7 +26,7 @@ router.get('/dashboard/overview', async (req, res) => {
 });
 
 // User statistics endpoint
-router.get('/users/stats', async (req, res) => {
+router.get('/users/stats', async (req: Request, res: Response) => {
   try {
     const userStats = await analyticsService.getUserStats();
     res.json(userStats);
@@ -37,7 +37,7 @@ router.get('/users/stats', async (req, res) => {
 });
 
 // Content statistics endpoint
-router.get('/content/stats', async (req, res) => {
+router.get('/content/stats', async (req: Request, res: Response) => {
   try {
     const contentStats = await analyticsService.getContentStats();
     res.json(contentStats);
@@ -48,7 +48,7 @@ router.get('/content/stats', async (req, res) => {
 });
 
 // Activity timeline endpoint
-router.get('/activities/timeline', async (req, res) => {
+router.get('/activities/timeline', async (req: Request, res: Response) => {
   try {
     const days = parseInt(req.query.days as string) || 7;
     const timeline = await analyticsService.getActivityTimeline(days);
@@ -60,7 +60,7 @@ router.get('/activities/timeline', async (req, res) => {
 });
 
 // Current active sessions endpoint
-router.get('/sessions/active', async (req, res) => {
+router.get('/sessions/active', async (req: Request, res: Response) => {
   try {
     const activeSessions = await analyticsService.getActiveSessions();
     res.json(activeSessions);
@@ -71,7 +71,7 @@ router.get('/sessions/active', async (req, res) => {
 });
 
 // Sync data from Jellyfin endpoint
-router.post('/sync', async (req, res) => {
+router.post('/sync', async (req: Request, res: Response) => {
   try {
     await analyticsService.syncFromJellyfin();
     res.json({ message: 'Data sync completed successfully' });
@@ -82,7 +82,7 @@ router.post('/sync', async (req, res) => {
 });
 
 // Settings endpoints
-router.get('/settings', async (req, res) => {
+router.get('/settings', async (req: Request, res: Response) => {
   try {
     const settings = await settingsService.getAllSettings();
     res.json(settings);
@@ -92,7 +92,7 @@ router.get('/settings', async (req, res) => {
   }
 });
 
-router.get('/settings/:category', async (req, res) => {
+router.get('/settings/:category', async (req: Request, res: Response) => {
   try {
     const { category } = req.params;
     const settings = await settingsService.getSettingsByCategory(category);
@@ -103,7 +103,7 @@ router.get('/settings/:category', async (req, res) => {
   }
 });
 
-router.put('/settings/:key', async (req, res) => {
+router.put('/settings/:key', async (req: Request, res: Response) => {
   try {
     const { key } = req.params;
     const { value } = req.body;
@@ -128,7 +128,7 @@ router.put('/settings/:key', async (req, res) => {
   }
 });
 
-router.post('/settings/validate', async (req, res) => {
+router.post('/settings/validate', async (req: Request, res: Response) => {
   try {
     const validation = await settingsService.validateSettings();
     res.json(validation);
@@ -138,7 +138,7 @@ router.post('/settings/validate', async (req, res) => {
   }
 });
 
-router.post('/settings/test-jellyfin', async (req, res) => {
+router.post('/settings/test-jellyfin', async (req: Request, res: Response) => {
   try {
     const { url, apiKey } = req.body;
 
