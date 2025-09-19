@@ -1,0 +1,92 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String    @id
+  name             String
+  lastActivityDate DateTime?
+  playCount        Int       @default(0)
+  totalRuntime     Int       @default(0) // in seconds
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  
+  sessions         Session[]
+  activities       Activity[]
+  
+  @@map("users")
+}
+
+model Session {
+  id              String    @id
+  userId          String
+  itemId          String?
+  itemName        String?
+  itemType        String?
+  deviceName      String?
+  clientName      String?
+  playMethod      String?
+  startTime       DateTime
+  endTime         DateTime?
+  playbackPositionTicks Int?
+  runtimeTicks    Int?
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("sessions")
+}
+
+model Activity {
+  id          String   @id @default(cuid())
+  userId      String
+  itemId      String?
+  itemName    String?
+  itemType    String?
+  activityType String   // "play", "pause", "stop", "seek"
+  timestamp   DateTime
+  data        String?  // JSON string for additional data
+  createdAt   DateTime @default(now())
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("activities")
+}
+
+model ContentStats {
+  id            String   @id @default(cuid())
+  itemId        String   @unique
+  itemName      String
+  itemType      String   // "Movie", "Episode", "Audio", etc.
+  playCount     Int      @default(0)
+  totalRuntime  Int      @default(0) // in seconds
+  uniqueUsers   Int      @default(0)
+  lastPlayed    DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@map("content_stats")
+}
+
+model Settings {
+  id            String   @id @default(cuid())
+  key           String   @unique
+  value         String?
+  description   String?
+  category      String   @default("general")
+  isEncrypted   Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@map("settings")
+}

@@ -1,0 +1,80 @@
+version: '3.8'
+
+services:
+  jellyfin-analytics:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: jellyfin-analytics
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    environment:
+      # Server Configuration
+      - NODE_ENV=production
+      - PORT=3000
+
+      # Database Configuration
+      - DATABASE_URL=file:/app/data/analytics.db
+
+      # Optional: Encryption key for settings (generate a secure key for production)
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY:-jellyfin-analytics-default-key-change-in-production}
+    volumes:
+      # Persist SQLite database
+      - jellyfin_analytics_data:/app/data
+
+      # Optional: Mount logs directory
+      - jellyfin_analytics_logs:/app/logs
+
+    # Network configuration
+    networks:
+      - jellyfin-analytics-network
+
+    # Health check
+    healthcheck:
+      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost:3000/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+    # Resource limits (optional)
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+
+    # Logging configuration
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '10m'
+        max-file: '3'
+
+# Volumes for data persistence
+volumes:
+  jellyfin_analytics_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data
+
+  jellyfin_analytics_logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./logs
+
+# Network configuration
+networks:
+  jellyfin-analytics-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
