@@ -8,8 +8,10 @@ echo "📊 Dashboard will be available at: http://localhost:3000"
 echo "⚙️ Configure Jellyfin at: http://localhost:3000/settings"
 echo ""
 
-# Create data directory if it doesn't exist
+# Create data directory if it doesn't exist with proper permissions
 mkdir -p data logs
+# Ensure directories are owned by user 1000:1000 (matches container user)
+sudo chown -R 1000:1000 data logs 2>/dev/null || chown -R 1000:1000 data logs 2>/dev/null || true
 
 # Run the container with host networking (eliminates ALL network issues on Linux!)
 docker run -d \

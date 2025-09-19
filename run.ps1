@@ -9,6 +9,7 @@ Write-Host ""
 # Create data directory if it doesn't exist
 if (!(Test-Path "data")) { New-Item -ItemType Directory -Path "data" }
 if (!(Test-Path "logs")) { New-Item -ItemType Directory -Path "logs" }
+# Note: Windows Docker Desktop handles permissions automatically
 
 # Get the current directory path for Windows
 $currentPath = (Get-Location).Path

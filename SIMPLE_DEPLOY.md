@@ -36,7 +36,8 @@ docker compose up -d
 1. **Uses host networking** - No network configuration needed!
 2. **Accesses Jellyfin directly** - No container-to-container networking
 3. **Auto-creates data folders** - Persistent storage just works
-4. **Zero configuration** - Just build and run
+4. **Runs as user 1000:1000** - Compatible with most Linux systems
+5. **Zero configuration** - Just build and run
 
 ## 🎯 After Deployment:
 

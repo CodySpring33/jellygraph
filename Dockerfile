@@ -48,10 +48,10 @@ FROM node:20-alpine AS production
 # Install sqlite3, OpenSSL, and other necessary packages for Prisma
 RUN apk add --no-cache sqlite openssl openssl-dev
 
-# Create app directory and user
+# Create app directory and user (1000:1000 for compatibility)
 WORKDIR /app
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S nodejs -u 1001
+RUN addgroup -g 1000 -S nodejs
+RUN adduser -S nodejs -u 1000
 
 # Copy package files and install production dependencies
 COPY package*.json ./
